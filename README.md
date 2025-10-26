@@ -106,7 +106,7 @@ cd imagesplit/example
 go run .
 ```
 
-示例会自动生成一张示例 PNG 图片，并在 `imagesplit/example/output` 目录下演示网格分割、固定尺寸分割以及目录批量处理，同时给出 JPEG 输出示例。
+示例会自动生成一张示例 PNG 图片，并在 `imagesplit/example/output` 目录下演示网格分割、固定尺寸分割以及目录批量处理，同时给出 JPEG 输出示例
 
 ## 测试图片
 
