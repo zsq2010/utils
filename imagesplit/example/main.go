@@ -6,7 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cto-new/imagesplit/imagesplit"
+	"github.com/zsq2010/utils/imagesplit"
+	testdata "github.com/zsq2010/utils/imagesplit/testdata"
 )
 
 func main() {
@@ -16,9 +17,9 @@ func main() {
 	}
 
 	inputImage := filepath.Join(outputDir, "test.png")
-	// if err := testdata.WriteGradientPNG(inputImage); err != nil {
-	// 	log.Fatalf("prepare input image: %v", err)
-	// }
+	if err := testdata.WriteGradientPNG(inputImage); err != nil {
+		log.Fatalf("prepare input image: %v", err)
+	}
 
 	gridFiles, err := imagesplit.GridSplit(inputImage, 2, 3, imagesplit.SplitOptions{
 		OutputDir:  outputDir,
