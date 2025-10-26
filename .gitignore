@@ -1,0 +1,19 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go build artifacts
+*.test
+*.out
+/bin/
+
+# Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Example output
+imagesplit/example/output/
