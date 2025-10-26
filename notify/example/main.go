@@ -14,7 +14,7 @@ func main() {
     fmt.Println()
 
     demoEmail := os.Getenv("DEMO_EMAIL") == "true"
-    demoBarker := os.Getenv("DEMO_BARKER") == "true"
+    demoBark := os.Getenv("DEMO_BARK") == "true"
 
     message := notify.Message{
         Title:    "测试通知",
@@ -38,27 +38,27 @@ func main() {
         fmt.Println()
     }
 
-    if demoBarker {
-        fmt.Println("2. Barker Push Notification Example")
-        fmt.Println("------------------------------------")
-        demoBarkerNotification(message)
+    if demoBark {
+        fmt.Println("2. Bark Push Notification Example")
+        fmt.Println("----------------------------------")
+        demoBarkNotification(message)
         fmt.Println()
     } else {
-        fmt.Println("2. Barker Push Notification Example (SKIPPED)")
-        fmt.Println("   Set DEMO_BARKER=true and configure environment variables to test:")
-        fmt.Println("   - BARKER_SERVER_URL")
-        fmt.Println("   - BARKER_KEY")
+        fmt.Println("2. Bark Push Notification Example (SKIPPED)")
+        fmt.Println("   Set DEMO_BARK=true and configure environment variables to test:")
+        fmt.Println("   - BARK_KEY (your device key)")
+        fmt.Println("   - BARK_SERVER_URL (optional, defaults to https://api.day.app)")
         fmt.Println()
     }
 
-    if demoEmail && demoBarker {
+    if demoEmail && demoBark {
         fmt.Println("3. Multi-Channel Notification Example")
         fmt.Println("--------------------------------------")
         demoMultiChannelNotification(message)
         fmt.Println()
     } else {
         fmt.Println("3. Multi-Channel Notification Example (SKIPPED)")
-        fmt.Println("   Enable both DEMO_EMAIL and DEMO_BARKER to test multi-channel")
+        fmt.Println("   Enable both DEMO_EMAIL and DEMO_BARK to test multi-channel")
         fmt.Println()
     }
 
@@ -89,22 +89,27 @@ func demoEmailNotification(message notify.Message) {
     fmt.Println("✓ Email sent successfully")
 }
 
-func demoBarkerNotification(message notify.Message) {
-    config := notify.BarkerConfig{
-        ServerURL: os.Getenv("BARKER_SERVER_URL"),
-        Key:       os.Getenv("BARKER_KEY"),
+func demoBarkNotification(message notify.Message) {
+    serverURL := os.Getenv("BARK_SERVER_URL")
+    if serverURL == "" {
+        serverURL = "https://api.day.app"
+    }
+
+    config := notify.BarkConfig{
+        ServerURL: serverURL,
+        Key:       os.Getenv("BARK_KEY"),
         Sound:     "default",
     }
 
-    barkerNotifier := notify.NewBarker(config)
+    barkNotifier := notify.NewBark(config)
 
-    fmt.Println("Sending Barker push notification...")
-    if err := barkerNotifier.Send(message); err != nil {
-        log.Printf("Barker send failed: %v\n", err)
+    fmt.Println("Sending Bark push notification...")
+    if err := barkNotifier.Send(message); err != nil {
+        log.Printf("Bark send failed: %v\n", err)
         return
     }
 
-    fmt.Println("✓ Barker notification sent successfully")
+    fmt.Println("✓ Bark notification sent successfully")
 }
 
 func demoMultiChannelNotification(message notify.Message) {
@@ -118,16 +123,21 @@ func demoMultiChannelNotification(message notify.Message) {
         To:       []string{os.Getenv("EMAIL_TO")},
     }
 
-    barkerConfig := notify.BarkerConfig{
-        ServerURL: os.Getenv("BARKER_SERVER_URL"),
-        Key:       os.Getenv("BARKER_KEY"),
+    barkServerURL := os.Getenv("BARK_SERVER_URL")
+    if barkServerURL == "" {
+        barkServerURL = "https://api.day.app"
+    }
+
+    barkConfig := notify.BarkConfig{
+        ServerURL: barkServerURL,
+        Key:       os.Getenv("BARK_KEY"),
         Sound:     "default",
     }
 
     emailNotifier := notify.NewEmail(emailConfig)
-    barkerNotifier := notify.NewBarker(barkerConfig)
+    barkNotifier := notify.NewBark(barkConfig)
 
-    multiNotifier := notify.NewMultiParallel(emailNotifier, barkerNotifier)
+    multiNotifier := notify.NewMultiParallel(emailNotifier, barkNotifier)
 
     fmt.Println("Sending to multiple channels in parallel...")
     if err := multiNotifier.Send(message); err != nil {
@@ -178,11 +188,11 @@ func demoMockNotifications() {
     To:       []string{"recipient@example.com"},
   })`)
 
-    fmt.Println("\nBarker Example:")
-    fmt.Println(`  barkerNotifier := notify.NewBarker(notify.BarkerConfig{
-    ServerURL: "https://api.day.app",
-    Key:       "your_device_key",
-    Sound:     "default",
+    fmt.Println("\nBark Example:")
+    fmt.Println(`  barkNotifier := notify.NewBark(notify.BarkConfig{
+    Key:   "your_device_key",  // 从 Bark App 获取
+    Sound: "default",
+    // ServerURL 默认为 https://api.day.app，可省略
   })`)
 
     fmt.Println("\nAdvanced Message Example:")
