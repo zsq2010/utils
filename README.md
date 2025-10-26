@@ -10,7 +10,7 @@ Go 语言实用工具库，提供常用的工具包。
 
 ### notify - 多渠道通知库
 
-`notify` 提供统一的通知发送接口，支持邮件（Email）、Barker 推送等多种通知渠道。
+`notify` 提供统一的通知发送接口，支持邮件（Email）、Bark 推送等多种通知渠道。
 
 ---
 
@@ -160,7 +160,7 @@ go test ./...
 
 - ✅ 统一的 `Notifier` 接口设计
 - ✅ 邮件通知：支持 QQ、Outlook、Gmail 等主流邮箱
-- ✅ Barker 推送通知：支持通过 key 发送推送到指定设备
+- ✅ Bark 推送通知：支持通过 key 发送推送到指定设备
 - ✅ 多渠道组合：支持同时向多个渠道发送通知
 - ✅ 灵活配置：超时控制、重试机制、优先级设置
 - ✅ 完善的错误处理和单元测试
@@ -204,10 +204,10 @@ func main() {
 }
 ```
 
-#### Barker 推送通知
+#### Bark 推送通知
 
 ```go
-barkerNotifier := notify.NewBarker(notify.BarkerConfig{
+barkNotifier := notify.NewBark(notify.BarkConfig{
     ServerURL: "https://api.day.app",
     Key:       "your_device_key",
     Sound:     "default",
@@ -219,7 +219,7 @@ message := notify.Message{
     Priority: "high",
 }
 
-if err := barkerNotifier.Send(message); err != nil {
+if err := barkNotifier.Send(message); err != nil {
     log.Fatal(err)
 }
 ```
@@ -229,10 +229,10 @@ if err := barkerNotifier.Send(message); err != nil {
 ```go
 // 创建多个通知渠道
 emailNotifier := notify.NewEmail(emailConfig)
-barkerNotifier := notify.NewBarker(barkerConfig)
+barkNotifier := notify.NewBark(barkConfig)
 
 // 组合多个渠道（并行发送）
-multiNotifier := notify.NewMultiParallel(emailNotifier, barkerNotifier)
+multiNotifier := notify.NewMultiParallel(emailNotifier, barkNotifier)
 
 // 一次发送到所有渠道
 message := notify.Message{
@@ -277,13 +277,13 @@ type EmailConfig struct {
 }
 ```
 
-#### Barker 配置
+#### Bark 配置
 
-**BarkerConfig 字段说明：**
+**BarkConfig 字段说明：**
 
 ```go
-type BarkerConfig struct {
-    ServerURL string  // Barker 服务器地址
+type BarkConfig struct {
+    ServerURL string  // Bark 服务器地址
     Key       string  // 设备 Key
     Sound     string  // 通知声音（可选）
     Icon      string  // 通知图标 URL（可选）
@@ -329,7 +329,7 @@ message := notify.Message{
 }
 ```
 
-#### 自定义参数（Barker）
+#### 自定义参数（Bark）
 
 ```go
 message := notify.Message{
@@ -379,10 +379,10 @@ export EMAIL_PASSWORD=your_auth_code
 export EMAIL_FROM=sender@qq.com
 export EMAIL_TO=recipient@example.com
 
-# Barker 测试
-export DEMO_BARKER=true
-export BARKER_SERVER_URL=https://api.day.app
-export BARKER_KEY=your_device_key
+# Bark 测试
+export DEMO_BARK=true
+export BARK_KEY=your_device_key
+export BARK_SERVER_URL=https://api.day.app  # 可选，默认为此地址
 
 go run .
 ```

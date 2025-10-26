@@ -10,11 +10,12 @@ import (
 	"time"
 )
 
-// BarkerConfig holds configuration for Barker push notifications.
-type BarkerConfig struct {
-	// ServerURL is the Barker server endpoint URL.
+// BarkConfig holds configuration for Bark push notifications.
+// Bark is an iOS notification service (https://api.day.app/).
+type BarkConfig struct {
+	// ServerURL is the Bark server endpoint URL (default: https://api.day.app).
 	ServerURL string
-	// Key is the client key for authenticating and routing the notification.
+	// Key is the device key for routing the notification to your iOS device.
 	Key string
 	// Sound is the notification sound name (optional).
 	Sound string
@@ -28,17 +29,22 @@ type BarkerConfig struct {
 	CommonConfig
 }
 
-// BarkerNotifier implements the Notifier interface for Barker push notifications.
-type BarkerNotifier struct {
-	config BarkerConfig
+// BarkNotifier implements the Notifier interface for Bark push notifications.
+type BarkNotifier struct {
+	config BarkConfig
 	client *http.Client
 }
 
-// NewBarker creates a new BarkerNotifier with the provided configuration.
-func NewBarker(config BarkerConfig) *BarkerNotifier {
+// NewBark creates a new BarkNotifier with the provided configuration.
+// If ServerURL is empty, it defaults to https://api.day.app.
+func NewBark(config BarkConfig) *BarkNotifier {
 	config.CommonConfig.applyDefaults()
 
-	return &BarkerNotifier{
+	if config.ServerURL == "" {
+		config.ServerURL = "https://api.day.app"
+	}
+
+	return &BarkNotifier{
 		config: config,
 		client: &http.Client{
 			Timeout: config.Timeout,
@@ -46,9 +52,9 @@ func NewBarker(config BarkerConfig) *BarkerNotifier {
 	}
 }
 
-// barkerRequest represents the JSON payload for Barker API.
-type barkerRequest struct {
-	Title    string `json:"title"`
+// barkRequest represents the JSON payload for Bark API.
+type barkRequest struct {
+	Title    string `json:"title,omitempty"`
 	Body     string `json:"body"`
 	Sound    string `json:"sound,omitempty"`
 	Icon     string `json:"icon,omitempty"`
@@ -58,17 +64,18 @@ type barkerRequest struct {
 	Badge    int    `json:"badge,omitempty"`
 	AutoCopy string `json:"autoCopy,omitempty"`
 	Copy     string `json:"copy,omitempty"`
+	IsArchive int   `json:"isArchive,omitempty"`
 }
 
-// barkerResponse represents the JSON response from Barker API.
-type barkerResponse struct {
+// barkResponse represents the JSON response from Bark API.
+type barkResponse struct {
 	Code      int    `json:"code"`
 	Message   string `json:"message"`
 	Timestamp int64  `json:"timestamp"`
 }
 
-// Send sends a push notification via Barker.
-func (b *BarkerNotifier) Send(message Message) error {
+// Send sends a push notification via Bark.
+func (b *BarkNotifier) Send(message Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), b.config.Timeout)
 	defer cancel()
 
@@ -79,7 +86,7 @@ func (b *BarkerNotifier) Send(message Message) error {
 		if i > 0 {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("barker send timeout: %w", ctx.Err())
+				return fmt.Errorf("bark send timeout: %w", ctx.Err())
 			case <-time.After(b.config.RetryInterval):
 			}
 		}
@@ -90,19 +97,16 @@ func (b *BarkerNotifier) Send(message Message) error {
 		}
 	}
 
-	return fmt.Errorf("barker send failed after %d attempts: %w", attempts, lastErr)
+	return fmt.Errorf("bark send failed after %d attempts: %w", attempts, lastErr)
 }
 
-// sendOnce performs a single Barker send attempt.
-func (b *BarkerNotifier) sendOnce(ctx context.Context, message Message) error {
-	if b.config.ServerURL == "" {
-		return fmt.Errorf("barker server URL is required")
-	}
+// sendOnce performs a single Bark send attempt.
+func (b *BarkNotifier) sendOnce(ctx context.Context, message Message) error {
 	if b.config.Key == "" {
-		return fmt.Errorf("barker key is required")
+		return fmt.Errorf("bark key is required")
 	}
 
-	req := barkerRequest{
+	req := barkRequest{
 		Title: message.Title,
 		Body:  message.Body,
 		Sound: b.config.Sound,
@@ -144,6 +148,9 @@ func (b *BarkerNotifier) sendOnce(ctx context.Context, message Message) error {
 		if copy, ok := message.Extra["copy"].(string); ok && copy != "" {
 			req.Copy = copy
 		}
+		if isArchive, ok := message.Extra["isArchive"].(int); ok {
+			req.IsArchive = isArchive
+		}
 	}
 
 	jsonData, err := json.Marshal(req)
@@ -171,16 +178,16 @@ func (b *BarkerNotifier) sendOnce(ctx context.Context, message Message) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("barker server returned status %d: %s", resp.StatusCode, string(body))
+		return fmt.Errorf("bark server returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var barkerResp barkerResponse
-	if err := json.Unmarshal(body, &barkerResp); err != nil {
+	var barkResp barkResponse
+	if err := json.Unmarshal(body, &barkResp); err != nil {
 		return nil
 	}
 
-	if barkerResp.Code != 200 {
-		return fmt.Errorf("barker API error (code %d): %s", barkerResp.Code, barkerResp.Message)
+	if barkResp.Code != 200 {
+		return fmt.Errorf("bark API error (code %d): %s", barkResp.Code, barkResp.Message)
 	}
 
 	return nil

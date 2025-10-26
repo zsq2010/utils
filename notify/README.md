@@ -1,12 +1,12 @@
 # notify - 多渠道通知库
 
-`notify` 包提供统一的通知发送接口，支持多种通知渠道，包括邮件（Email）和 Barker 推送通知。
+`notify` 包提供统一的通知发送接口，支持多种通知渠道，包括邮件（Email）和 Bark 推送通知。
 
 ## 特性
 
 - ✅ 统一的 `Notifier` 接口设计
 - ✅ 邮件通知：支持 QQ、Outlook、Gmail 等主流邮箱
-- ✅ Barker 推送通知：支持通过 key 发送推送到指定设备
+- ✅ Bark 推送通知：支持通过 key 发送推送到指定设备
 - ✅ 多渠道组合：支持同时向多个渠道发送通知（顺序或并行）
 - ✅ 灵活配置：超时控制、重试机制、优先级设置
 - ✅ 完善的错误处理和单元测试
@@ -50,11 +50,11 @@ func main() {
 }
 ```
 
-### Barker 推送通知
+### Bark 推送通知
 
 ```go
-barkerNotifier := notify.NewBarker(notify.BarkerConfig{
-    ServerURL: "https://api.day.app",  // Barker 服务器地址
+barkNotifier := notify.NewBark(notify.BarkConfig{
+    ServerURL: "https://api.day.app",  // Bark 服务器地址
     Key:       "your_device_key",       // 你的设备 Key
     Sound:     "default",
 })
@@ -65,7 +65,7 @@ message := notify.Message{
     Priority: "high",
 }
 
-if err := barkerNotifier.Send(message); err != nil {
+if err := barkNotifier.Send(message); err != nil {
     log.Fatal(err)
 }
 ```
@@ -75,13 +75,13 @@ if err := barkerNotifier.Send(message); err != nil {
 ```go
 // 创建多个通知渠道
 emailNotifier := notify.NewEmail(emailConfig)
-barkerNotifier := notify.NewBarker(barkerConfig)
+barkNotifier := notify.NewBark(barkConfig)
 
 // 并行发送到所有渠道
-multiNotifier := notify.NewMultiParallel(emailNotifier, barkerNotifier)
+multiNotifier := notify.NewMultiParallel(emailNotifier, barkNotifier)
 
 // 或者顺序发送（遇到错误立即停止）
-// multiNotifier := notify.NewMulti(emailNotifier, barkerNotifier)
+// multiNotifier := notify.NewMulti(emailNotifier, barkNotifier)
 
 message := notify.Message{
     Title:    "系统警告",
@@ -186,11 +186,11 @@ emailNotifier := notify.NewEmail(notify.EmailConfig{
 })
 ```
 
-### Barker 配置
+### Bark 配置
 
 ```go
-barkerNotifier := notify.NewBarker(notify.BarkerConfig{
-    ServerURL: "https://api.day.app",  // Barker 服务器地址
+barkNotifier := notify.NewBark(notify.BarkConfig{
+    ServerURL: "https://api.day.app",  // Bark 服务器地址
     Key:       "your_device_key",      // 设备 Key
     Sound:     "default",              // 通知声音（可选）
     Icon:      "https://example.com/icon.png",  // 图标 URL（可选）
@@ -199,10 +199,10 @@ barkerNotifier := notify.NewBarker(notify.BarkerConfig{
 })
 ```
 
-**获取 Barker Key：**
-1. 在 iOS 设备上安装 Barker App
+**获取 Bark Key：**
+1. 在 iOS 设备上安装 Bark App
 2. 打开 App 查看设备 Key
-3. 或者使用自建的 Barker 服务器
+3. 或者使用自建的 Bark 服务器
 
 ### 通用配置选项
 
@@ -254,9 +254,9 @@ message := notify.Message{
 
 **注意：** 当前版本的附件支持是基础实现，仅在邮件中显示附件文件名。完整的附件编码（MIME multipart）将在未来版本中增强。
 
-### Barker 自定义参数
+### Bark 自定义参数
 
-使用 `Extra` 字段传递 Barker 特定参数：
+使用 `Extra` 字段传递 Bark 特定参数：
 
 ```go
 message := notify.Message{
@@ -284,7 +284,7 @@ message := notify.Message{
 }
 ```
 
-优先级映射（Barker）：
+优先级映射（Bark）：
 - `high` / `urgent` → `timeSensitive`（时效性通知）
 - `low` → `passive`（被动通知）
 - 其他 → `active`（普通通知）
@@ -311,7 +311,7 @@ emailNotifier := notify.NewEmail(notify.EmailConfig{
 #### 顺序发送（遇到错误立即停止）
 
 ```go
-multi := notify.NewMulti(emailNotifier, barkerNotifier, slackNotifier)
+multi := notify.NewMulti(emailNotifier, barkNotifier, slackNotifier)
 // 按顺序发送，第一个失败则停止
 err := multi.Send(message)
 ```
@@ -319,7 +319,7 @@ err := multi.Send(message)
 #### 并行发送（收集所有错误）
 
 ```go
-multi := notify.NewMultiParallel(emailNotifier, barkerNotifier, slackNotifier)
+multi := notify.NewMultiParallel(emailNotifier, barkNotifier, slackNotifier)
 // 并行发送到所有渠道，收集所有错误
 err := multi.Send(message)
 // 如果多个渠道失败，err 将包含所有错误信息
@@ -354,15 +354,14 @@ func main() {
         To:       []string{"admin@example.com"},
     })
 
-    // 配置 Barker 推送
-    barkerNotifier := notify.NewBarker(notify.BarkerConfig{
-        ServerURL: "https://api.day.app",
-        Key:       os.Getenv("BARKER_KEY"),
-        Sound:     "alarm",
+    // 配置 Bark 推送
+    barkNotifier := notify.NewBark(notify.BarkConfig{
+        Key:   os.Getenv("BARK_KEY"),
+        Sound: "alarm",
     })
 
     // 组合通知渠道
-    notifier := notify.NewMultiParallel(emailNotifier, barkerNotifier)
+    notifier := notify.NewMultiParallel(emailNotifier, barkNotifier)
 
     // 监控循环
     for {
@@ -484,7 +483,7 @@ go tool cover -html=coverage.out
 
 3. **使用并行多渠道提高可靠性**
    ```go
-   notifier := notify.NewMultiParallel(email, barker, slack)
+   notifier := notify.NewMultiParallel(email, bark, slack)
    ```
 
 4. **记录发送日志**
@@ -542,12 +541,12 @@ A: 请确保：
 2. 使用应用专用密码，不是 Google 账号密码
 3. 网络可以访问 smtp.gmail.com
 
-### Q: Barker 推送没有收到？
+### Q: Bark 推送没有收到？
 
 A: 请检查：
 1. ServerURL 是否正确（默认为 https://api.day.app）
 2. Key 是否正确
-3. iOS 设备上的 Barker App 是否正常运行
+3. iOS 设备上的 Bark App 是否正常运行
 4. 网络连接是否正常
 
 ### Q: 如何提高发送成功率？
@@ -560,7 +559,7 @@ A: 建议：
 
 ### Q: 测试覆盖率为什么没有达到 80%？
 
-A: 邮件发送的底层 SMTP 连接代码难以在单元测试中 mock（标准库 net/smtp 不提供依赖注入）。实际的业务逻辑、配置验证、消息构建等核心功能都有完整的测试覆盖。Barker 通知和多渠道功能都有 >85% 的覆盖率。
+A: 邮件发送的底层 SMTP 连接代码难以在单元测试中 mock（标准库 net/smtp 不提供依赖注入）。实际的业务逻辑、配置验证、消息构建等核心功能都有完整的测试覆盖。Bark 通知和多渠道功能都有 >85% 的覆盖率。
 
 ## 许可证
 
