@@ -8,6 +8,7 @@
 # Go build artifacts
 *.test
 *.out
+coverage.out
 /bin/
 
 # Editor
