@@ -13,7 +13,7 @@
 ## 安装
 
 ```bash
-go get github.com/cto-new/imagesplit
+go get github.com/zsq2010/utils
 ```
 
 ## 快速上手
@@ -27,7 +27,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/cto-new/imagesplit/imagesplit"
+    "github.com/zsq2010/utils/imagesplit"
 )
 
 func main() {
@@ -113,7 +113,7 @@ go run .
 项目提供 `imagesplit/testdata` 辅助包，可动态生成内置的测试图片：
 
 ```go
-import testdata "github.com/cto-new/imagesplit/imagesplit/testdata"
+import testdata "github.com/zsq2010/utils/imagesplit/testdata"
 
 data, _ := testdata.GradientPNG()    // 获取示例 PNG 图片字节流
 testdata.WriteBlocksJPEG("blocks.jpg") // 生成示例 JPEG 文件
