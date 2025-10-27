@@ -19,4 +19,4 @@
 imagesplit/example/output/
 
 #secret file
-config.ini
+./config.ini
