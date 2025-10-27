@@ -17,3 +17,6 @@
 
 # Example output
 imagesplit/example/output/
+
+#secret file
+config.ini
