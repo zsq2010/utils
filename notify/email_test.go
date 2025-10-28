@@ -12,6 +12,7 @@ func TestEmailConfig_applyProviderDefaults(t *testing.T) {
         expectedHost string
         expectedPort int
         expectedTLS  bool
+        expectedSSL  bool
     }{
         {
             name:         "QQMail defaults",
@@ -19,20 +20,23 @@ func TestEmailConfig_applyProviderDefaults(t *testing.T) {
             expectedHost: "smtp.qq.com",
             expectedPort: 587,
             expectedTLS:  true,
+            expectedSSL:  false,
         },
         {
             name:         "Outlook defaults",
             provider:     Outlook,
             expectedHost: "smtp-mail.outlook.com",
-            expectedPort: 587,
-            expectedTLS:  true,
+            expectedPort: 465,
+            expectedTLS:  false,
+            expectedSSL:  true,
         },
         {
             name:         "Gmail defaults",
             provider:     Gmail,
             expectedHost: "smtp.gmail.com",
-            expectedPort: 587,
-            expectedTLS:  true,
+            expectedPort: 465,
+            expectedTLS:  false,
+            expectedSSL:  true,
         },
         {
             name:         "Custom no defaults",
@@ -40,6 +44,7 @@ func TestEmailConfig_applyProviderDefaults(t *testing.T) {
             expectedHost: "",
             expectedPort: 0,
             expectedTLS:  false,
+            expectedSSL:  false,
         },
     }
 
@@ -56,6 +61,9 @@ func TestEmailConfig_applyProviderDefaults(t *testing.T) {
             }
             if config.UseTLS != tt.expectedTLS {
                 t.Errorf("UseTLS = %v, want %v", config.UseTLS, tt.expectedTLS)
+            }
+            if config.UseSSL != tt.expectedSSL {
+                t.Errorf("UseSSL = %v, want %v", config.UseSSL, tt.expectedSSL)
             }
         })
     }
